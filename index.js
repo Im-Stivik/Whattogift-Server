@@ -15,6 +15,9 @@ const port = 3001;
 import accountRouter from "./controllers/account.js";
 app.use("/account", accountRouter);
 
+import companyRouter from "./controllers/company.js";
+app.use("/company", companyRouter);
+
 mongoose.connect(mongoUrl)
 .then(result => {
     console.log(result);
