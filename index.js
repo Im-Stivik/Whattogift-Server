@@ -1,30 +1,75 @@
-import bp from "body-parser";
 import express from "express";
+import bp from "body-parser";
 import mongoose from "mongoose";
+
+import swaggerJSDoc from "swagger-jsdoc";
+import SwaggerUiExpress from "swagger-ui-express";
 
 const app = express();
 
-app.use(bp.urlencoded({extended:false}));
+app.use(bp.urlencoded({ extended: false }));
 app.use(bp.json());
 
 const mongoUrl = "mongodb+srv://whattogift-user:Mkp5WGrms4P816po@cluster0.m9pscxs.mongodb.net/whattogiftdb?retryWrites=true&w=majority";
 
 const port = 3001;
 
-//connect the controller to the app
-import accountRouter from "./controllers/account.js";
-app.use("/account", accountRouter);
+//SETTING SWAGGER
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Whatogift API Endpoints',
+            version: '1.0.0',
+        },
+        servers: [
+            {
+                url: `http://localhost:${port}`
+            }
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            }
+        },
+        security: [
+            {
+                bearerAuth: []
+            }
+        ]
+    },
+    apis: ['./controllers/*.js']
+}
 
-import companyRouter from "./controllers/company.js";
-app.use("/company", companyRouter);
+const swaggerSpec = swaggerJSDoc(options);
+app.use('/api-docs', SwaggerUiExpress.serve, SwaggerUiExpress.setup(swaggerSpec));
+
+
+//CONTROLLERS
+import accountControl from './controllers/account.js';
+app.use('/api/account', accountControl);
+
+import companyControl from './controllers/company.js';
+app.use('/api/company', companyControl);
+
+import productControl from './controllers/product.js';
+app.use('/api/product', productControl);
+
+
+
+
 
 mongoose.connect(mongoUrl)
-.then(result => {
-    console.log(result);
-    app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    }
-    );
-})
-.catch(error => {console.log(error)});
+    .then(res => {
+        app.listen(port, function () {
+            console.log(`Server is running via port ${port}`);
+        });
 
+
+
+    })
+    .catch(error => { console.log(error.message); })
